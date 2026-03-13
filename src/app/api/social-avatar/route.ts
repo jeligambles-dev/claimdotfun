@@ -45,27 +45,38 @@ export async function GET(req: NextRequest) {
     }
 
     if (platform === "INSTAGRAM") {
-      const response = await fetch(
+      // Try multiple sources since Instagram blocks most scrapers
+      const sources = [
         `https://unavatar.io/instagram/${encodeURIComponent(handle)}`,
-        {
-          signal: AbortSignal.timeout(8000),
-          redirect: "follow",
-        }
-      );
+        `https://unavatar.io/${encodeURIComponent(handle)}`,
+        `https://i.pravatar.cc/150?u=instagram-${encodeURIComponent(handle)}`,
+      ];
 
-      if (!response.ok) {
-        return NextResponse.json({ error: "Could not fetch avatar" }, { status: 404 });
+      for (const url of sources) {
+        try {
+          const response = await fetch(url, {
+            signal: AbortSignal.timeout(6000),
+            redirect: "follow",
+          });
+
+          if (response.ok) {
+            const contentType = response.headers.get("content-type") || "image/jpeg";
+            if (contentType.startsWith("image/")) {
+              const imageBuffer = await response.arrayBuffer();
+              return new NextResponse(imageBuffer, {
+                headers: {
+                  "Content-Type": contentType,
+                  "Cache-Control": "public, max-age=3600, s-maxage=3600",
+                },
+              });
+            }
+          }
+        } catch {
+          continue;
+        }
       }
 
-      const imageBuffer = await response.arrayBuffer();
-      const contentType = response.headers.get("content-type") || "image/jpeg";
-
-      return new NextResponse(imageBuffer, {
-        headers: {
-          "Content-Type": contentType,
-          "Cache-Control": "public, max-age=3600, s-maxage=3600",
-        },
-      });
+      return NextResponse.json({ error: "Could not fetch avatar" }, { status: 404 });
     }
 
     if (platform === "TIKTOK") {
