@@ -128,37 +128,62 @@ async function fetchTikTokData(videoUrl: string): Promise<{ text: string; userna
  * The user adds the verification code to their bio temporarily.
  */
 async function fetchInstagramBio(username: string): Promise<{ bio: string; username: string } | null> {
-  try {
-    const response = await fetch(
-      `https://www.instagram.com/api/v1/users/web_profile_info/?username=${encodeURIComponent(username)}`,
-      {
-        headers: {
-          "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-          "x-ig-app-id": "936619743392459",
-          "x-requested-with": "XMLHttpRequest",
-          "Accept": "*/*",
-          "Referer": `https://www.instagram.com/${username}/`,
-          "sec-fetch-dest": "empty",
-          "sec-fetch-mode": "cors",
-          "sec-fetch-site": "same-origin",
-        },
+  const endpoints = [
+    {
+      url: `https://i.instagram.com/api/v1/users/web_profile_info/?username=${encodeURIComponent(username)}`,
+      headers: {
+        "User-Agent": "Instagram 275.0.0.27.98 Android (33/13; 420dpi; 1080x2400; samsung; SM-G991B; o1s; exynos2100)",
+        "x-ig-app-id": "936619743392459",
+      },
+    },
+    {
+      url: `https://www.instagram.com/api/v1/users/web_profile_info/?username=${encodeURIComponent(username)}`,
+      headers: {
+        "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
+        "x-ig-app-id": "936619743392459",
+        "x-requested-with": "XMLHttpRequest",
+        "Accept": "*/*",
+        "Referer": `https://www.instagram.com/${username}/`,
+      },
+    },
+    {
+      url: `https://www.instagram.com/api/v1/users/web_profile_info/?username=${encodeURIComponent(username)}`,
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+        "x-ig-app-id": "936619743392459",
+        "x-requested-with": "XMLHttpRequest",
+        "Accept": "*/*",
+        "Referer": `https://www.instagram.com/${username}/`,
+        "sec-fetch-dest": "empty",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "same-origin",
+      },
+    },
+  ];
+
+  for (const endpoint of endpoints) {
+    try {
+      const response = await fetch(endpoint.url, {
+        headers: endpoint.headers,
         signal: AbortSignal.timeout(10000),
-      }
-    );
+      });
 
-    if (!response.ok) return null;
+      if (!response.ok) continue;
 
-    const data = await response.json();
-    const user = data?.data?.user;
-    if (!user) return null;
+      const data = await response.json();
+      const user = data?.data?.user;
+      if (!user) continue;
 
-    return {
-      bio: user.biography || "",
-      username: (user.username || "").toLowerCase(),
-    };
-  } catch {
-    return null;
+      return {
+        bio: user.biography || "",
+        username: (user.username || "").toLowerCase(),
+      };
+    } catch {
+      continue;
+    }
   }
+
+  return null;
 }
 
 export async function verifyPostUrl(
