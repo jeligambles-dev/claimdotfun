@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Token {
+  id              String   @id @default(cuid())
+  mintAddress     String   @unique
+  name            String
+  symbol          String
+  description     String?
+  imageUrl        String?
+
+  // Social handle this token is assigned to
+  platform        String   // TWITTER, INSTAGRAM, TIKTOK
+  socialHandle    String
+
+  // Creator keypair (encrypted)
+  creatorPublicKey  String
+  encryptedPrivateKey String
+
+  // Launcher (person who paid for the launch)
+  launcherWallet  String
+
+  // Claim status
+  claimStatus     String   @default("UNCLAIMED")
+  claimedAt       DateTime?
+  claimedBy       String?
+
+  // Fee tracking
+  totalFeesEarned  Float   @default(0)
+  lastFeeCheck     DateTime?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([platform, socialHandle])
+  @@index([claimStatus])
+  @@index([createdAt])
+  @@index([platform])
+}
+
+model Claim {
+  id              String    @id @default(cuid())
+  tokenId         String
+  platform        String
+  socialHandle    String
+
+  // Verification
+  verificationCode String  @unique
+  verified        Boolean  @default(false)
+  verifiedAt      DateTime?
+
+  // The wallet the user wants fees sent to (optional, post-claim)
+  destinationWallet String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([tokenId])
+  @@index([platform, socialHandle])
+  @@index([createdAt])
+}
