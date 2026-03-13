@@ -83,7 +83,7 @@ function TokenImage({ token }: { token: TokenData }) {
     if (token.imageUrl && token.imageUrl !== "(uploaded)" && token.imageUrl.startsWith("http")) {
       setSrc(token.imageUrl);
     } else {
-      setSrc(`https://pump.fun/_next/image?url=https%3A%2F%2Fipfs.io%2Fipfs%2F${token.mintAddress}&w=128&q=75`);
+      setSrc(`https://pump.fun/coin/${token.mintAddress}/image`);
     }
   }, [token]);
 
