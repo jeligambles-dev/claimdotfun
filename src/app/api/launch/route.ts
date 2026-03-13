@@ -26,9 +26,10 @@ export async function POST(req: NextRequest) {
 }
 
 async function handlePrepare(body: Record<string, unknown>) {
-  const { name, symbol, description, platform, socialHandle, launcherWallet, initialBuySOL, imageData } = body as {
+  const { name, symbol, description, platform, socialHandle, launcherWallet, initialBuySOL, imageData, twitter, telegram, website } = body as {
     name: string; symbol: string; description: string; platform: string;
     socialHandle: string; launcherWallet: string; initialBuySOL: number; imageData?: string;
+    twitter?: string; telegram?: string; website?: string;
   };
 
   if (!name || !symbol || !platform || !socialHandle || !launcherWallet) {
@@ -88,6 +89,9 @@ async function handlePrepare(body: Record<string, unknown>) {
     encryptedPrivateKey: wallet.encryptedPrivateKey,
     launcherWallet,
     initialBuySOL: (initialBuySOL as number) || 0,
+    twitter,
+    telegram,
+    website,
   });
 
   if (!result.success) {

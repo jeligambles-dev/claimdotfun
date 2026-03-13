@@ -26,6 +26,9 @@ interface LaunchTokenParams {
   encryptedPrivateKey: string;
   launcherWallet: string;
   initialBuySOL: number;
+  twitter?: string;
+  telegram?: string;
+  website?: string;
 }
 
 interface PrepareResult {
@@ -51,6 +54,7 @@ export async function uploadTokenMetadata(
   description: string,
   imageFile?: Buffer,
   imageUrl?: string,
+  socials?: { twitter?: string; telegram?: string; website?: string },
 ): Promise<{ metadataUri: string; metadataName: string; metadataSymbol: string }> {
   const formData = new FormData();
 
@@ -73,6 +77,9 @@ export async function uploadTokenMetadata(
   formData.append("symbol", symbol);
   formData.append("description", description);
   formData.append("showName", "true");
+  if (socials?.twitter) formData.append("twitter", socials.twitter);
+  if (socials?.telegram) formData.append("telegram", socials.telegram);
+  if (socials?.website) formData.append("website", socials.website);
 
   const response = await fetch("https://pump.fun/api/ipfs", {
     method: "POST",
@@ -97,7 +104,7 @@ export async function uploadTokenMetadata(
 
 /**
  * Build the raw pump.fun create instruction.
- * The `user` (creator wallet) becomes the on-chain creator who earns 0.3% fees.
+ * The `user` (creator wallet) becomes the on-chain creator who earns 100% fees.
  */
 function buildPumpCreateInstruction(
   mint: PublicKey,
@@ -188,6 +195,7 @@ export async function prepareLaunch(params: LaunchTokenParams): Promise<PrepareR
       params.description,
       params.imageFile,
       params.imageUrl,
+      { twitter: params.twitter, telegram: params.telegram, website: params.website },
     );
 
     // Funding amount: deploy cost + initial buy
@@ -231,7 +239,7 @@ export async function prepareLaunch(params: LaunchTokenParams): Promise<PrepareR
 
 /**
  * Step 2: After funding is confirmed, build and send the pump.fun create transaction.
- * The creator wallet is the on-chain creator (earns 0.3% fees).
+ * The creator wallet is the on-chain creator (earns 100% fees).
  */
 export async function executeLaunch(params: {
   name: string;

@@ -83,7 +83,7 @@ function TokenImage({ token }: { token: TokenData }) {
     if (token.imageUrl && token.imageUrl !== "(uploaded)" && token.imageUrl.startsWith("http")) {
       setSrc(token.imageUrl);
     } else {
-      setSrc(`https://pump.fun/coin/${token.mintAddress}/image`);
+      setSrc(`/api/token-image?mint=${token.mintAddress}`);
     }
   }, [token]);
 
