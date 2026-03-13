@@ -7,7 +7,6 @@ export default function Home() {
       <div className="text-center pt-16 pb-12 relative">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-gradient-to-r from-pump-teal/5 to-pump-green/5 rounded-full blur-[100px] pointer-events-none" />
         <div className="relative">
-          <img src="/logo.png" alt="ClaimDotFun" className="w-40 h-40 rounded-3xl mx-auto mb-6" />
           <div className="inline-flex items-center gap-2 bg-pump-card/80 border border-pump-border rounded-full px-4 py-1.5 mb-4">
             <span className="text-pump-gray text-xs">CA:</span>
             <span className="text-pump-green text-xs font-mono">{process.env.NEXT_PUBLIC_CA || "TBA"}</span>
