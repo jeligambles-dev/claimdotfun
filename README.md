@@ -1,36 +1,42 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ClaimDotFun
 
-## Getting Started
+Launch pump.fun tokens linked to social media creators. Creator wallet keys are encrypted and held in escrow until the real creator verifies ownership.
 
-First, run the development server:
+## The Problem
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+On pump.fun, creator rewards go to whatever wallet deployed the token. There is no way to link them to a Twitter, Instagram, or TikTok account. When someone launches a token in a creator's name, the deployer earns the fees — not the creator.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## How It Works
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 1. Launch
+Anyone can launch a token for a creator. Pick a platform (Twitter, Instagram, or TikTok), enter the creator's handle, fill in token details, and deploy.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Behind the scenes, ClaimDotFun generates a fresh Solana keypair. This becomes the creator wallet. The token deploys to pump.fun using this wallet, so 100% of creator trading fees route to it.
 
-## Learn More
+The private key is AES-256 encrypted and stored in escrow. The launcher never sees it.
 
-To learn more about Next.js, take a look at the following resources:
+### 2. Fees Accumulate
+Every trade on pump.fun generates creator fees. These fees accumulate in the creator wallet automatically. No action needed from anyone.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 3. Creator Claims
+When the real creator is ready, they verify ownership of their social account:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Twitter/X** — Post a tweet containing a verification code, paste the tweet URL
+- **Instagram** — Add the verification code to your bio
+- **TikTok** — Post a video with the code in the caption, paste the video URL
 
-## Deploy on Vercel
+Once verified, the encrypted private key is decrypted and revealed. The creator imports it into Phantom or Solflare and the funds are theirs.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+There is no time limit. Claims never expire.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Key Details
+
+- **One token per creator** — Each social account can only have one token to prevent fragmentation
+- **Session-locked claims** — Each claim session is tied to the user's browser. Even if someone sees the verification code, they cannot claim without the session
+- **Encrypted at rest** — Private keys are AES-256 encrypted and decrypted only once during successful verification
+- **Multi-platform** — Supports Twitter/X, Instagram, and TikTok
+- **No creator involvement at launch** — The creator does not need to know about the token for it to work
+
+## Links
+
+- [ClaimDotFun on X](https://x.com/claimdotfun)
