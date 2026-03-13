@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
 /**
- * Proxy endpoint that fetches pump.fun token images server-side to avoid CORS.
+ * Proxy endpoint that fetches pump.fun token images server-side.
+ * Queries pump.fun API for the IPFS image URI, then proxies the image.
  * Usage: /api/token-image?mint=<mintAddress>
  */
 export async function GET(req: NextRequest) {
@@ -12,47 +13,34 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    // Try pump.fun coin image endpoint
-    const response = await fetch(
-      `https://pump.fun/coin/${mint}/image`,
-      {
-        signal: AbortSignal.timeout(8000),
-        redirect: "follow",
-      }
+    // Get token data from pump.fun API to find the IPFS image URI
+    const apiRes = await fetch(
+      `https://frontend-api-v3.pump.fun/coins/${mint}`,
+      { signal: AbortSignal.timeout(8000) }
     );
 
-    if (response.ok) {
-      const contentType = response.headers.get("content-type") || "";
-      if (contentType.startsWith("image/")) {
-        const imageBuffer = await response.arrayBuffer();
-        return new NextResponse(imageBuffer, {
-          headers: {
-            "Content-Type": contentType,
-            "Cache-Control": "public, max-age=86400, s-maxage=86400",
-          },
-        });
-      }
-    }
+    if (apiRes.ok) {
+      const data = await apiRes.json();
+      const imageUri = data.image_uri;
 
-    // Fallback: try the pump.fun frontend image proxy
-    const fallback = await fetch(
-      `https://pump.fun/_next/image?url=https%3A%2F%2Fcoin-images.coingecko.com%2Fcoins%2Fimages%2F${mint}&w=128&q=75`,
-      {
-        signal: AbortSignal.timeout(8000),
-        redirect: "follow",
-      }
-    );
-
-    if (fallback.ok) {
-      const contentType = fallback.headers.get("content-type") || "";
-      if (contentType.startsWith("image/")) {
-        const imageBuffer = await fallback.arrayBuffer();
-        return new NextResponse(imageBuffer, {
-          headers: {
-            "Content-Type": contentType,
-            "Cache-Control": "public, max-age=86400, s-maxage=86400",
-          },
+      if (imageUri && typeof imageUri === "string") {
+        const imgRes = await fetch(imageUri, {
+          signal: AbortSignal.timeout(10000),
+          redirect: "follow",
         });
+
+        if (imgRes.ok) {
+          const contentType = imgRes.headers.get("content-type") || "image/png";
+          if (contentType.startsWith("image/")) {
+            const imageBuffer = await imgRes.arrayBuffer();
+            return new NextResponse(imageBuffer, {
+              headers: {
+                "Content-Type": contentType,
+                "Cache-Control": "public, max-age=86400, s-maxage=86400",
+              },
+            });
+          }
+        }
       }
     }
 
